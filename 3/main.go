@@ -5,8 +5,6 @@ import (
     "fmt"
     "log"
     "os"
-    "math/big"
-
 ) 
   
 func main() { 
@@ -39,21 +37,14 @@ func partOne(lines []string) int {
     return encaunteredTreesCount
 }
 
-func partTwo(lines []string) string {
-    result := big.NewInt(1)
-
+func partTwo(lines []string) int64 {
     a := countEncounteredTrees(lines, 1, 1)
     b := countEncounteredTrees(lines, 3, 1)
     c := countEncounteredTrees(lines, 5, 1)
     d := countEncounteredTrees(lines, 7, 1)
     e := countEncounteredTrees(lines, 1, 2)
     fmt.Printf("%d %d %d %d %d\n",a,b,c,d,e)
-    result = result.Mul(result, big.NewInt(a))
-    result = result.Mul(result, big.NewInt(b))
-    result = result.Mul(result, big.NewInt(c)) 
-    result = result.Mul(result, big.NewInt(d))
-    result = result.Mul(result, big.NewInt(e))
-    return result.String()
+    return (a*b*c*d*e)
 }
 
 
