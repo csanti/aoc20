@@ -6,6 +6,7 @@ import (
     "log"
     "os"
     "strings"
+    "strconv"
 ) 
 
 type tree struct {
@@ -29,8 +30,8 @@ func main() {
 
     file.Close() 
 
-    fmt.Println(partOne(lines))
-    //fmt.Println(partTwo(lines))
+    //fmt.Println(partOne(lines))
+    fmt.Println(partTwo(lines))
 }
 
 func partOne(lines []string) int {
@@ -76,8 +77,36 @@ func (t *tree) resultContains(bagName string) bool {
     return false
 }
 
-func partTwo(lines []string) int {
+func (t *tree) iterateCount(branch string, count int) int {
+    root := t.references[branch]
+    for _, leaf := range root {
+        count++
+        count = t.iterateCount(leaf, count)
+    }
+    return count
+}
 
-    return 0
+func partTwo(lines []string) int {
+    t := tree {
+        references: make(map[string][]string),
+    }
+    for _, line := range lines {
+        a := strings.Split(line, " bags contain ")
+        bag_color := strings.Replace(a[0], " ", "_", -1)
+        b := strings.Split(a[1], ", ")
+        for _, i := range b {
+            c := strings.Split(i, " bag")
+            num_bags, err := strconv.Atoi(c[0][:1])
+            if err != nil {
+                // contains no other bag
+                continue
+            }
+            in_bag_color := strings.Replace(c[0][2:], " ", "_", -1)
+            for l := 0; l < num_bags; l++ {
+                t.references[bag_color] = append(t.references[bag_color], in_bag_color)
+            }
+        }
+    }
+    return t.iterateCount("shiny_gold", 0)
 }
 
