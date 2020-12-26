@@ -30,8 +30,8 @@ func main() {
 
     file.Close() 
 
-    log.Println(partOne(lines))
-    //partTwo(lines)
+    //log.Println(partOne(lines))
+    log.Println(partTwo(lines))
 }
 
 func partOne(lines []string) int {
@@ -53,7 +53,7 @@ func partOne(lines []string) int {
         }
 
         log.Println("***************************************")
-        currentState, changes = computeRound(currentState)
+        currentState, changes = computeRound(currentState, 0)
         log.Printf("Changes made = %d", changes)
         if changes == 0 {
             break
@@ -72,7 +72,7 @@ func partOne(lines []string) int {
     return finalCount
 }
 
-func computeRound(s *state) (*state, int) {
+func computeRound(s *state, mode int) (*state, int) {
     // copy the state
     nextState := state {
         maxX: s.maxX,
@@ -86,7 +86,10 @@ func computeRound(s *state) (*state, int) {
         for x, seat := range row { 
             switch seat {
             case 'L':
-                if countAdjacent(s, x, y, '#') == 0 {
+                if mode == 0 && countAdjacent(s, x, y, '#') == 0 {
+                    newRow[x] = '#'
+                    changes++
+                } else if mode == 1 && countVisible(s, x, y, '#') == 0 {
                     newRow[x] = '#'
                     changes++
                 } else {
@@ -94,7 +97,10 @@ func computeRound(s *state) (*state, int) {
                 }
 
             case '#':
-                if countAdjacent(s, x, y, '#') >= 4 {
+                if mode == 0 && countAdjacent(s, x, y, '#') >= 4 {
+                    newRow[x] = 'L'
+                    changes++
+                } else if mode == 1 && countVisible(s, x, y, '#') >= 5 {
                     newRow[x] = 'L'
                     changes++
                 } else {
@@ -135,27 +141,94 @@ func countAdjacent(s *state, posX int, posY int, r rune) int {
     return count
 }
 
-/*
-func partTwo(lines []string) int {
-    var rows []byte
-    rows = make([]byte, 128, 128)
-    for _, l := range lines {
-        row, col, _ := parseSeat(l)
-        //log.Printf("%b\n", byte(1<<col))
-        rows[row] = rows[row] + byte(1<<col)
-    }
-
-    for i, row := range rows {
-        log.Printf("%d: %b - %d\n", i, row, row)
-        if row == 127 {
-            log.Println("here")
-            // found the row and seat (col number converting to binary)
-            log.Printf("%d\n", 255-row)
+func countVisible(s *state, posX int, posY int, r rune) int {
+    var x,y,layer,limits,count int
+    dirs := make(map[int]bool)
+    layer = 1
+    for {
+        for mulX := -1; mulX <= 1; mulX++ {
+            x = posX + (layer * mulX)
+            if x < 0 || x > s.maxX - 1 {
+                limits++
+                continue
+            }
+            for mulY := -1; mulY <= 1; mulY++ {
+                y = posY + (layer * mulY)
+                if y < 0 || y > s.maxY - 1 {
+                    limits++
+                    continue
+                }
+                if x == posX && y == posY {
+                    continue
+                }
+                if dirs[(mulX*5)+mulY] {
+                    //log.Printf("skiping x:%d y:%d, mulX:%d mulY:%d ",x,y,mulX,mulY)
+                    continue
+                }
+                if s.rows[y][x] != '.' {
+                    //log.Printf("found on x:%d y:%d, mulX:%d mulY:%d layer:%d ",x,y,mulX,mulY,layer)
+                    dirs[(mulX*5)+mulY] = true
+                    if s.rows[y][x] == r {
+                        count++
+                    }
+                }
+                //log.Printf("x:%d y:%d layer:%d",x,y,layer)
+            }
         }
+        if limits >= 4 {
+            //log.Println("limits")
+            break
+        } else if len(dirs) >= 8 {
+            //log.Println("limit dirs")
+            break
+        }
+        limits = 0
+        layer++
     }
-    return 0
+    //log.Printf("countvisible for - x:%d y:%d - finding:%s ---- count = %d",posX, posY, string(r), count)
+    return count
 }
 
+
+func partTwo(lines []string) int {
+    var initialState state
+    initialState.rows = make(map[int][]rune)
+    for i, l := range lines {
+        initialState.rows[i] = []rune(l)
+
+    }
+    initialState.maxY = len(lines)
+    initialState.maxX = len(lines[0])
+
+    var changes int
+    var currentState *state
+    currentState = &initialState
+    for {
+        for i := 0; i < currentState.maxY; i++ {
+            log.Println(string(currentState.rows[i]))
+        }
+        log.Println("***************************************")
+        currentState, changes = computeRound(currentState, 1)
+        log.Printf("Changes made = %d", changes)
+        if changes == 0 {
+            break
+        }
+    }
+
+    var finalCount int
+    for _, row := range currentState.rows {
+        for _, seat := range row {
+            if seat == '#' {
+                finalCount++
+            }
+        }
+    }
+
+    return finalCount
+}
+
+
+/*
 func parseSeat(b string) (int,int,int) {
     currentRowMax := 127
     currentRowMin := 0
