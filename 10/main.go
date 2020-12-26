@@ -11,7 +11,7 @@ import (
 
 
 func main() { 
-    file, err := os.Open("input2.txt") 
+    file, err := os.Open("input.txt") 
   
     if err != nil { 
         log.Fatalf("failed to open") 
@@ -51,30 +51,28 @@ func partOne(nums []int) int {
     return diffs[1]*diffs[3]
 }
 
-func partTwo(nums []int) int64 {
+func partTwo(nums []int) int {
+    nums = append(nums, 0)
     sort.Ints(nums)
     var paths = make([]int, len(nums))
     for i := len(nums)-1; i >= 0; i--{
         
-        if i < len(nums)-1 && nums[i] - nums[i+1] <= 3{
-            paths[i]++
-            paths[i] = paths[i] * paths[i+1]
+        if i < len(nums)-1 && nums[i+1] - nums[i] <= 3 {     
+            paths[i] = paths[i] + paths[i+1]
         } else {
             fmt.Println("initial")
             paths[i] = 1
         }
-        if i < len(nums)-2 && nums[i] - nums[i+2] <= 3{
-            paths[i]++
-            paths[i] = paths[i] * paths[i+2]
+        if i < len(nums)-2 && nums[i+2] - nums[i] <= 3 {
+            paths[i] = paths[i] + paths[i+2]
         }
-        if i < len(nums)-3 && nums[i] - nums[i+3] <= 3{
-            paths[i]++
-            paths[i] = paths[i] * paths[i+3]
+        if i < len(nums)-3 && nums[i+3] - nums[i] <= 3 {
+            paths[i] = paths[i] + paths[i+3]
         }
         
         fmt.Printf(" %d - paths:%d\n", nums[i], paths[i])
     }
-    return 0
+    return paths[0]
 }
 
 func mulNums(nums []int) int64 {
