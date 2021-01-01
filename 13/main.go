@@ -26,7 +26,8 @@ func main() {
     file.Close() 
 
     //fmt.Println(partOne(lines))
-    fmt.Println(partTwo(lines))
+    //fmt.Println(partTwo(lines))
+    fmt.Println(partTwoAlt(lines))
 }
 
 func partOne(lines []string) int {
@@ -97,6 +98,30 @@ func partTwo (lines []string) int {
         }
     }
     return ref
+}
+
+func partTwoAlt (lines []string) int {
+    busTimes := strings.Split(lines[1], ",")
+
+
+    var cand, currentListIndex, ttCheck int
+    mul := 1
+    var finish bool
+
+    for {
+        ttCheck, currentListIndex, finish = getNextTime(busTimes, currentListIndex)
+        if finish {
+            break
+        }
+        fmt.Printf("checking: %d\n",ttCheck)
+        for (cand+currentListIndex) % ttCheck != 0 {
+            cand += mul
+        }
+        fmt.Printf("found: %d\n",ttCheck)
+        currentListIndex++
+        mul *= ttCheck
+    }
+    return cand
 }
 
 func getNextTime(busTimes []string, currentListIndex int) (int, int, bool) {
